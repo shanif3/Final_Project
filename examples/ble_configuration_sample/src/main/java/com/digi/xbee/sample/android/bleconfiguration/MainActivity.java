@@ -314,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
             // If the Bluetooth device is not in the list yet, add it.
-            if (!bleDevices.contains(bluetoothDevice))
+            if (!bleDevices.contains(bluetoothDevice)&& bluetoothDevice.getName().startsWith("Digi"))
                 bluetoothDeviceAdapter.add(bluetoothDevice);
         }
     }
