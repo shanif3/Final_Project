@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">XBee BLE Configuration Sample</string>
+    <string name="app_name">My Traffic App</string>
 
     <string name="select_device">Select your XBee device</string>
     <string name="location_permission_needed">This application needs the location permission to scan for Bluetooth devices</string>
