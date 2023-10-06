@@ -16,6 +16,7 @@
 
 package com.digi.xbee.sample.android.bleconfiguration;
 
+import java.lang.System;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -52,6 +53,7 @@ import java.util.ArrayList;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
+
 public class MainActivity extends AppCompatActivity {
 
     // Constants.
@@ -70,12 +72,17 @@ public class MainActivity extends AppCompatActivity {
 
     private static XBeeBLEDevice xbeeDevice;
 
+    private static final int REQUEST_BLUETOOTH_PERMISSION = 123;
+    private static final int REQUEST_ENABLE_BLUETOOTH = 1;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize Bluetooth stuff.
+            // Initialize Bluetooth stuff.
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         if (bluetoothManager != null)
             bluetoothAdapter = bluetoothManager.getAdapter();
@@ -101,8 +108,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        bluetoothDeviceAdapter.clear();
-        requestLocationPermission();
+        // Check Bluetooth state
+        if (bluetoothAdapter == null) {
+            // Device does not support Bluetooth
+            // Handle this case (e.g., show a message or exit the app)
+            return;
+        }
+
+        if (!bluetoothAdapter.isEnabled()) {
+            // Bluetooth is not enabled, prompt the user to enable it
+            showEnableBluetoothDialog();
+        } else {
+            // Bluetooth is enabled, continue with your Bluetooth operations
+            // Request Bluetooth permissions if needed
+            requestLocationPermission();
+            bluetoothDeviceAdapter.clear();
+        }
     }
 
     @Override
@@ -153,6 +174,46 @@ public class MainActivity extends AppCompatActivity {
             bluetoothAdapter.stopLeScan(scanCallback);
         scanProgress.setVisibility(View.INVISIBLE);
     }
+
+    private void showEnableBluetoothDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enable Bluetooth");
+        builder.setMessage("Bluetooth is required for this app. Do you want to enable it?");
+        builder.setPositiveButton("Enable", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Open Bluetooth settings to enable Bluetooth
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BLUETOOTH);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Handle the case where the user cancels enabling Bluetooth
+                // You may choose to exit the app or disable Bluetooth-dependent features
+            }
+        });
+        builder.setCancelable(false); // Prevent the user from dismissing the dialog
+        builder.show();
+    }
+    private void requestBluetoothPermission() {
+        String[] perms = {Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN};
+
+        if (EasyPermissions.hasPermissions(this, perms)) {
+            // Bluetooth permissions are already granted.
+            // You can start using Bluetooth functionality here.
+        } else {
+            // Request Bluetooth permissions.
+            EasyPermissions.requestPermissions(
+                    this,
+                    "Bluetooth permissions are required",
+                    REQUEST_BLUETOOTH_PERMISSION,
+                    perms
+            );
+        }
+    }
+
 
     /**
      * Returns the selected and open XBee device.
@@ -318,4 +379,7 @@ public class MainActivity extends AppCompatActivity {
                 bluetoothDeviceAdapter.add(bluetoothDevice);
         }
     }
+
+
+
 }
