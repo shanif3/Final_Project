@@ -16,7 +16,6 @@
 
 package com.digi.xbee.sample.android.bleconfiguration;
 
-import java.lang.System;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -52,6 +51,8 @@ import java.util.ArrayList;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
+import android.util.Log;
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -160,9 +161,13 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Starts the Bluetooth scan process.
      */
+
     private void startScan() {
-        if (bluetoothAdapter != null)
+        Log.d("DeviceList", "Starting Bluetooth scan...");
+
+        if (bluetoothAdapter != null) {
             bluetoothAdapter.startLeScan(scanCallback);
+        }
         scanProgress.setVisibility(View.VISIBLE);
     }
 
@@ -375,9 +380,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
             // If the Bluetooth device is not in the list yet, add it.
-            if (!bleDevices.contains(bluetoothDevice))
-                bluetoothDeviceAdapter.add(bluetoothDevice);
+            if (!bleDevices.contains(bluetoothDevice)) {
+               // bleDevices.add(bluetoothDevice);
+                if(bluetoothDevice.getName()!= null &&bluetoothDevice.getName().startsWith("Digi")) {
+                    bluetoothDeviceAdapter.add(bluetoothDevice);
+                    for (BluetoothDevice device : bleDevices) {
+                        Log.d("DeviceList", "Device Name: " + device.getName() + ", Address: " + device.getAddress());
+                    }
+                }
+            }
         }
+
     }
 
 
