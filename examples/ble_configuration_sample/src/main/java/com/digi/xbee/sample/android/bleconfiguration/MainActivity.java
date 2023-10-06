@@ -17,6 +17,7 @@
 package com.digi.xbee.sample.android.bleconfiguration;
 
 import java.lang.System;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_BLUETOOTH_PERMISSION = 123;
     private static final int REQUEST_ENABLE_BLUETOOTH = 1;
-
+    private DatabaseGateway databaseGateway;
 
 
     @Override
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-            // Initialize Bluetooth stuff.
+        // Initialize Bluetooth stuff.
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         if (bluetoothManager != null)
             bluetoothAdapter = bluetoothManager.getAdapter();
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         scanProgress = findViewById(R.id.scanProgress);
+        databaseGateway = DatabaseGateway.getINSTANCE(getApplicationContext());
     }
 
     @Override
@@ -197,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setCancelable(false); // Prevent the user from dismissing the dialog
         builder.show();
     }
+
     private void requestBluetoothPermission() {
         String[] perms = {Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN};
 
@@ -379,7 +382,6 @@ public class MainActivity extends AppCompatActivity {
                 bluetoothDeviceAdapter.add(bluetoothDevice);
         }
     }
-
 
 
 }
