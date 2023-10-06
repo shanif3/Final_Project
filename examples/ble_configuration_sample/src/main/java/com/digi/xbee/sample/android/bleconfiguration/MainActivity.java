@@ -406,11 +406,11 @@ public class MainActivity extends AppCompatActivity {
                     ));
 
                     for (DeviceInfo deviceInfo : deviceInfoList) {
-                        Log.d("DeviceInfo", "Name: " + deviceInfo.name);
-                        Log.d("DeviceInfo", "Address: " + deviceInfo.address);
-                        Log.d("DeviceInfo", "Device Type: " + deviceInfo.deviceType);
-                        Log.d("DeviceInfo", "Location: " + deviceInfo.location);
-                        Log.d("DeviceInfo", "Last Modified: " + deviceInfo.lastModified);
+                        Log.d("DeviceInfo", "Name: " + deviceInfo.getName());
+                        Log.d("DeviceInfo", "Address: " + deviceInfo.getAddress());
+                        Log.d("DeviceInfo", "Device Type: " + deviceInfo.getDeviceType());
+                        Log.d("DeviceInfo", "Location: " + deviceInfo.getLocation());
+                        Log.d("DeviceInfo", "Last Modified: " + deviceInfo.getLastModified());
                     }
                 }
             }
@@ -429,24 +429,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // Define a class to hold device information
-    private class DeviceInfo {
-        private String address;
-        private String name;
-        private String deviceType;
-        private String location;
-        private String lastModified;
 
-        public DeviceInfo(String address, String name, String deviceType, String location, String lastModified) {
-            this.address = address;
-            this.name = name;
-            this.deviceType = deviceType;
-            this.location = location;
-            this.lastModified = lastModified;
-        }
-
-
-
-    }
     // Function to determine the device type based on its name
     private String getDeviceType(String deviceName) {
         // You can implement logic here to determine the device type (CAR/TRUCK)
