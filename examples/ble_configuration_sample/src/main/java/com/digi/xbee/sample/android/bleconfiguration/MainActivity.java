@@ -47,11 +47,15 @@ import com.digi.xbee.api.android.XBeeBLEDevice;
 import com.digi.xbee.api.exceptions.BluetoothAuthenticationException;
 import com.digi.xbee.api.exceptions.XBeeException;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 import android.util.Log;
+import java.util.Locale;
+
 
 
 
@@ -62,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
 
     // Variables.
     private ArrayList<BluetoothDevice> bleDevices = new ArrayList<>();
+    private ArrayList<DeviceInfo> deviceInfoList = new ArrayList<>();
+
     private BluetoothDeviceAdapter bluetoothDeviceAdapter;
 
     private BluetoothAdapter bluetoothAdapter;
@@ -377,22 +383,80 @@ public class MainActivity extends AppCompatActivity {
      * Custom Bluetooth scan callback.
      */
     private class BleScanCallback implements BluetoothAdapter.LeScanCallback {
+        // Add a member variable to store the current time formatted
+        private String currentTimeFormatted;
+
         @Override
         public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
             // If the Bluetooth device is not in the list yet, add it.
             if (!bleDevices.contains(bluetoothDevice)) {
-               // bleDevices.add(bluetoothDevice);
-                if(bluetoothDevice.getName()!= null &&bluetoothDevice.getName().startsWith("Digi")) {
+                if (bluetoothDevice.getName() != null && bluetoothDevice.getName().startsWith("Digi")) {
                     bluetoothDeviceAdapter.add(bluetoothDevice);
-                    for (BluetoothDevice device : bleDevices) {
-                        Log.d("DeviceList", "Device Name: " + device.getName() + ", Address: " + device.getAddress());
+                    updateCurrentTime(); // Call the method to update currentTimeFormatted
+                    deviceInfoList.add(new DeviceInfo(
+                            bluetoothDevice.getAddress(),
+                            bluetoothDevice.getName(),
+                            getDeviceType(bluetoothDevice.getName()),
+                            null, // Location information (you can set this later)
+                            currentTimeFormatted // Set the lastModified field to the current time
+                    ));
+
+                    for (DeviceInfo deviceInfo : deviceInfoList) {
+                        Log.d("DeviceInfo", "Name: " + deviceInfo.name);
+                        Log.d("DeviceInfo", "Address: " + deviceInfo.address);
+                        Log.d("DeviceInfo", "Device Type: " + deviceInfo.deviceType);
+                        Log.d("DeviceInfo", "Location: " + deviceInfo.location);
+                        Log.d("DeviceInfo", "Last Modified: " + deviceInfo.lastModified);
                     }
                 }
             }
         }
 
+        // Add this method to update currentTimeFormatted
+        private void updateCurrentTime() {
+            // Get the current time in milliseconds
+            long currentTimeMillis = System.currentTimeMillis();
+
+            // Convert the current time to a human-readable date and time format
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            currentTimeFormatted = dateFormat.format(new Date(currentTimeMillis));
+        }
     }
 
 
+    // Define a class to hold device information
+    private class DeviceInfo {
+        private String address;
+        private String name;
+        private String deviceType;
+        private String location;
+        private String lastModified;
 
+        public DeviceInfo(String address, String name, String deviceType, String location, String lastModified) {
+            this.address = address;
+            this.name = name;
+            this.deviceType = deviceType;
+            this.location = location;
+            this.lastModified = lastModified;
+        }
+
+
+
+    }
+    // Function to determine the device type based on its name
+    private String getDeviceType(String deviceName) {
+        // You can implement logic here to determine the device type (CAR/TRUCK)
+        // For example, you can check if the deviceName starts with "CAR" or "TRUCK"
+        if (deviceName != null && deviceName.contains("Car")) {
+            return "Car";
+        } else if (deviceName != null && deviceName.startsWith("Truck")) {
+            return "Truck";
+        } else {
+            return "UNKNOWN";
+        }
+    }
 }
+
+
+
+
