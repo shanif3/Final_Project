@@ -12,7 +12,9 @@ import com.google.firebase.FirebaseApp;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int MY_LOCATION_PERMISSION_REQUEST_CODE = 1;
     private DatabaseGateway databaseGateway;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
