@@ -20,26 +20,21 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.open_screen);
 
             Button buttonWith = findViewById(R.id.buttonWith);
-            buttonWith.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
-                    startActivity(intent);
-                }
+            buttonWith.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
+                startActivity(intent);
             });
 
             Button buttonWithout = findViewById(R.id.buttonWithout);
-            buttonWithout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(MainActivity.this, MapActivity.class);
-                    startActivity(intent);
-                }
+            buttonWithout.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, MapActivity.class);
+                startActivity(intent);
             });
-
+            PermissionUtils.requestLocationPermissions(this, MY_LOCATION_PERMISSION_REQUEST_CODE, false);
             databaseGateway = DatabaseGateway.getINSTANCE(getApplicationContext());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
 }

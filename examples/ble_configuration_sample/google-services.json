@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "925762616947",
+    "project_id": "final-project-398614",
+    "storage_bucket": "final-project-398614.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:925762616947:android:2131ba1261c8ca0f41b406",
+        "android_client_info": {
+          "package_name": "com.digi.xbee.sample.android.bleconfiguration"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYj0Bf_6X5l04oO9MnUgyhtzIeeqpHFWQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:925762616947:android:2a5e3c63600f403741b406",
+        "android_client_info": {
+          "package_name": "com.example.mapdemo.gms"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYj0Bf_6X5l04oO9MnUgyhtzIeeqpHFWQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -55,10 +55,10 @@ import java.util.Date;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
+
 import android.util.Log;
+
 import java.util.Locale;
-
-
 
 
 public class BluetoothActivity extends AppCompatActivity {
@@ -152,24 +152,6 @@ public class BluetoothActivity extends AppCompatActivity {
      * Requests the location permission to the user and starts the Bluetooth
      * scan when done.
      */
-    @AfterPermissionGranted(REQUEST_LOCATION_PERMISSION)
-    private void requestLocationPermission() {
-        String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
-
-        if (EasyPermissions.hasPermissions(this, perms)) {
-            // Start the Bluetooth scan.
-            startScan();
-        } else {
-            EasyPermissions.requestPermissions(this, getResources().getString(R.string.location_permission_needed),
-                    REQUEST_LOCATION_PERMISSION, perms);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-    }
 
     /**
      * Starts the Bluetooth scan process.
@@ -409,13 +391,13 @@ public class BluetoothActivity extends AppCompatActivity {
                             currentTimeFormatted // Set the lastModified field to the current time
                     ));
 
-                    for (DeviceInfo deviceInfo : deviceInfoList) {
-                        Log.d("DeviceInfo", "Name: " + deviceInfo.getName());
-                        Log.d("DeviceInfo", "Address: " + deviceInfo.getAddress());
-                        Log.d("DeviceInfo", "Device Type: " + deviceInfo.getDeviceType());
-                        Log.d("DeviceInfo", "Location: " + deviceInfo.getLocation());
-                        Log.d("DeviceInfo", "Last Modified: " + deviceInfo.getLastModified());
-                    }
+//                    for (DeviceInfo deviceInfo : deviceInfoList) {
+//                        Log.d("DeviceInfo", "Name: " + deviceInfo.getName());
+//                        Log.d("DeviceInfo", "Address: " + deviceInfo.getAddress());
+//                        Log.d("DeviceInfo", "Device Type: " + deviceInfo.getDeviceType());
+//                        Log.d("DeviceInfo", "Location: " + deviceInfo.getLocation());
+//                        Log.d("DeviceInfo", "Last Modified: " + deviceInfo.getLastModified());
+//                    }
                 }
             }
         }
@@ -435,16 +417,35 @@ public class BluetoothActivity extends AppCompatActivity {
     // Define a class to hold device information
 
     // Function to determine the device type based on its name
-    private String getDeviceType(String deviceName) {
+    private DeviceInfo.VehicleType getDeviceType(String deviceName) {
         // You can implement logic here to determine the device type (CAR/TRUCK)
         // For example, you can check if the deviceName starts with "CAR" or "TRUCK"
         if (deviceName != null && deviceName.contains("Car")) {
-            return "Car";
+            return DeviceInfo.VehicleType.CAR;
         } else if (deviceName != null && deviceName.startsWith("Truck")) {
-            return "Truck";
+            return DeviceInfo.VehicleType.TRUCK;
         } else {
-            return "UNKNOWN";
+            return DeviceInfo.VehicleType.GHOST_CAR;
         }
+    }
+
+    @AfterPermissionGranted(REQUEST_LOCATION_PERMISSION)
+    private void requestLocationPermission() {
+        String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
+
+        if (EasyPermissions.hasPermissions(this, perms)) {
+            // Start the Bluetooth scan.
+            startScan();
+        } else {
+            EasyPermissions.requestPermissions(this, getResources().getString(R.string.location_permission_needed),
+                    REQUEST_LOCATION_PERMISSION, perms);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 }
 

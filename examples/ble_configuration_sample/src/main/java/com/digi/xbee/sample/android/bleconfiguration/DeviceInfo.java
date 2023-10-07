@@ -17,11 +17,11 @@ public class DeviceInfo {
         this.name = name;
     }
 
-    public String getDeviceType() {
+    public VehicleType getDeviceType() {
         return deviceType;
     }
 
-    public void setDeviceType(String deviceType) {
+    public void setDeviceType(VehicleType deviceType) {
         this.deviceType = deviceType;
     }
 
@@ -43,15 +43,21 @@ public class DeviceInfo {
 
     private String address;
     private String name;
-    private String deviceType;
+    private VehicleType deviceType;
     private String location;
     private String lastModified;
 
-    public DeviceInfo(String address, String name, String deviceType, String location, String lastModified) {
+    public DeviceInfo(String address, String name, VehicleType deviceType, String location, String lastModified) {
         this.address = address;
         this.name = name;
         this.deviceType = deviceType;
         this.location = location;
         this.lastModified = lastModified;
+    }
+
+    enum VehicleType {
+        CAR,
+        TRUCK,
+        GHOST_CAR
     }
 }

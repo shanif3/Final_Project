@@ -41,4 +41,7 @@
 
     <string name="connection_lost_title">Device disconnected</string>
     <string name="connection_lost_description">Bluetooth connection lost with the device.</string>
+    <string name="location_permission_denied" />
+    <string name="permission_required_toast" />
+    <string name="permission_rationale_location" />
 </resources>
