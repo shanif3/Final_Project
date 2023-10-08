@@ -63,6 +63,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 CameraPosition newCameraLocation = googleMap.getCameraPosition();
                 LatLng currentPosition = newCameraLocation.target;
                 float[] results = new float[3];
+
+                // Check if cameraLocation is null and initialize it if needed
+                if (cameraLocation == null) {
+                    cameraLocation = new GeoLocation(currentPosition.latitude, currentPosition.longitude);
+                }
+
                 Location.distanceBetween(currentPosition.latitude, currentPosition.longitude, cameraLocation.latitude, cameraLocation.longitude, results);
                 if (results[0] > 1000) {
                     cameraLocation = new GeoLocation(currentPosition.latitude, currentPosition.longitude);
