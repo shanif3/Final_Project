@@ -8,6 +8,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
@@ -34,7 +36,7 @@ public class DatabaseGateway {
 
     private static final String TAG = "DatabaseGateway";
     private static final long MIN_TIME_BETWEEN_UPDATES = 20;
-    private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
+    private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 3; //changed to if the device moves more than 3 meters, a new location update will be generated.
     public final String generatedId = UUID.randomUUID().toString();
 
     private static DatabaseGateway INSTANCE;
@@ -54,22 +56,47 @@ public class DatabaseGateway {
 
     Context context;
 
+
+
+    public void addDeviceInfoToDeviceCollection(String address, String name, DeviceInfo.VehicleType deviceType, GeoLocation location, String lastModified) {
+        // Create a map containing the device information
+        Map<String, Object> deviceInfo = new HashMap<>();
+        deviceInfo.put("address", address);
+        deviceInfo.put("name", name);
+        deviceInfo.put("deviceType", deviceType);
+        deviceInfo.put("location", new GeoLocation(0, 0));
+        deviceInfo.put("lastModified", lastModified);
+        deviceInfo.put("geoHash", GeoFireUtils.getGeoHashForLocation(new GeoLocation(0, 0)));
+
+
+        // Add the device information to Firestore
+        db.collection("vehicles").add(deviceInfo)
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(context, "Device information added successfully", Toast.LENGTH_SHORT).show();
+
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error adding device information to Firestore: " + e.getMessage());
+                });
+
+    }
+
     public static DatabaseGateway getINSTANCE(Context context) {
         if (INSTANCE == null)
             INSTANCE = new DatabaseGateway(context);
         return INSTANCE;
     }
 
-    private DatabaseGateway(Context context) {
+   private DatabaseGateway(Context context) {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
-
-        myLocationDocument = db.collection("vehicles").document(generatedId);
-        Map<String, Object> tempMap = new HashMap<>();
-        tempMap.put("Location", new GeoLocation(0, 0));
-        tempMap.put("carType", "Truck");
-        tempMap.put("geoHash", GeoFireUtils.getGeoHashForLocation(new GeoLocation(0, 0)));
-        myLocationDocument.set(tempMap);
+//
+//        myLocationDocument = db.collection("vehicles").document(generatedId);
+//        Map<String, Object> tempMap = new HashMap<>();
+//        tempMap.put("Location", new GeoLocation(0, 0));
+//        tempMap.put("carType", "Truck");
+//        tempMap.put("geoHash", GeoFireUtils.getGeoHashForLocation(new GeoLocation(0, 0)));
+//        myLocationDocument.set(tempMap);
 
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationListener = new MyLocationListener();
@@ -190,4 +217,6 @@ public class DatabaseGateway {
         public void onProviderDisabled(String s) {
         }
     }
+
+
 }

@@ -383,13 +383,13 @@ public class BluetoothActivity extends AppCompatActivity {
                 if (bluetoothDevice.getName() != null && bluetoothDevice.getName().startsWith("Digi")) {
                     bluetoothDeviceAdapter.add(bluetoothDevice);
                     updateCurrentTime(); // Call the method to update currentTimeFormatted
-                    deviceInfoList.add(new DeviceInfo(
+                    databaseGateway.addDeviceInfoToDeviceCollection(
                             bluetoothDevice.getAddress(),
                             bluetoothDevice.getName(),
                             getDeviceType(bluetoothDevice.getName()),
-                            null, // Location information (you can set this later)
-                            currentTimeFormatted // Set the lastModified field to the current time
-                    ));
+                            null, // Set the location information here or leave it as null
+                            currentTimeFormatted
+                    );
 
 //                    for (DeviceInfo deviceInfo : deviceInfoList) {
 //                        Log.d("DeviceInfo", "Name: " + deviceInfo.getName());
