@@ -205,16 +205,15 @@ public class DatabaseGateway {
         @Override
         public void onLocationChanged(Location location) {
             hashedMyLocation = GeoFireUtils.getGeoHashForLocation(new GeoLocation(location.getLatitude(), location.getLongitude()));
-            if (myLocationDocument != null) {
-                WriteBatch batch = db.batch();
-                for (DeviceInfo deviceInfo : linkedVehicles.values()) {
-                    DocumentReference vehicle = db.collection("vehicles").document(deviceInfo.getAddress());
-                    batch.set(vehicle, deviceInfo);
-                }
-                batch.commit().addOnCompleteListener(task -> {
-                });
+            WriteBatch batch = db.batch();
+            for (DeviceInfo deviceInfo : linkedVehicles.values()) {
+                DocumentReference vehicle = db.collection("vehicles").document(deviceInfo.getAddress());
+                batch.set(vehicle, deviceInfo);
             }
+            batch.commit().addOnCompleteListener(task -> {
+            });
         }
+
 
         @Override
         public void onStatusChanged(String s, int i, Bundle bundle) {
