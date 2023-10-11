@@ -74,7 +74,7 @@ public class DatabaseGateway {
 
 
         // Add the device information to Firestore
-        db.collection("vehicles").add(deviceInfo1)
+        db.collection("vehicles").document(address).set(deviceInfo1)
                 .addOnSuccessListener(documentReference -> Toast.makeText(context, "Device information added successfully", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e -> Log.e(TAG, "Error adding device information to Firestore: " + e.getMessage()));
 
