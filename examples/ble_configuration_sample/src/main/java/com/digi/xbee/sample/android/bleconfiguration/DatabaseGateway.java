@@ -60,7 +60,7 @@ public class DatabaseGateway {
         return linkedVehicles;
     }
 
-    Map<String, DeviceInfo> linkedVehicles;
+    Map<String, DeviceInfo> linkedVehicles = new HashMap<>();
 
     String hashedMyLocation;
     GeoLocation myLocation;
