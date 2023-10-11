@@ -106,9 +106,9 @@ public class DatabaseGateway {
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BETWEEN_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
     }
 
-    public void setVehiclesNearbySnapshotListener(GeoLocation center, Consumer<List<DocumentSnapshot>> listConsumer) {
+    public void setVehiclesNearbySnapshotListener(GeoLocation center, float zoom, Consumer<List<DocumentSnapshot>> listConsumer) {
 
-        final double radiusInM = 2 * 1000;
+        final double radiusInM = 1000 * 1000/Math.pow(zoom+2, 2);
         // Each item in 'bounds' represents a startAt/endAt pair. We have to issue
 // a separate query for each pair. There can be up to 9 pairs of bounds
 // depending on overlap, but in most cases there are 4.
@@ -135,7 +135,8 @@ public class DatabaseGateway {
                         QuerySnapshot snap = task.getResult();
                         List<DocumentSnapshot> documents = snap.getDocuments();
                         for (DocumentSnapshot doc : documents) {
-                            GeoLocation geoLocation = doc.get("Location", GeoLocation.class);
+                            if (!doc.contains("location")) continue;
+                            GeoLocation geoLocation = new GeoLocation(doc.getDouble("location.latitude"),doc.getDouble("location.longitude"));
                             double distanceInM = GeoFireUtils.getDistanceBetween(geoLocation, center);
                             if (distanceInM <= radiusInM) {
                                 matchingDocs.add(doc);
@@ -145,6 +146,7 @@ public class DatabaseGateway {
                     }
                     listConsumer.accept(vehiclesNearby);
                     vehiclesNearby = matchingDocs;
+
                 });
 //
 //        myLocationListener = myLocationDocument.addSnapshotListener((documentSnapshot, error) -> {

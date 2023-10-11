@@ -36,8 +36,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         try {
             List<Marker> newList = new ArrayList<>();
             if (documentSnapshots != null)
-                for (DocumentSnapshot vehicles : documentSnapshots) {
-                    GeoLocation geoLocation = vehicles.get("Location", GeoLocation.class);
+                for (DocumentSnapshot vehicle : documentSnapshots) {
+                    GeoLocation geoLocation = new GeoLocation(vehicle.getDouble("location.latitude"),vehicle.getDouble("location.longitude"));
                     newList.add(googleMap.addMarker(new MarkerOptions().position(new LatLng(geoLocation.latitude, geoLocation.longitude))));
                 }
             vehiclesNearbyMarkers.forEach(Marker::remove);
@@ -71,7 +71,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 Location.distanceBetween(currentPosition.latitude, currentPosition.longitude, cameraLocation.latitude, cameraLocation.longitude, results);
                 if (results[0] > 1000) {
                     cameraLocation = new GeoLocation(currentPosition.latitude, currentPosition.longitude);
-                    databaseGateway.setVehiclesNearbySnapshotListener(new GeoLocation(currentPosition.latitude, currentPosition.longitude), updateVehiclesNearByOnMap);
+                    databaseGateway.setVehiclesNearbySnapshotListener(new GeoLocation(currentPosition.latitude, currentPosition.longitude), googleMap.getCameraPosition().zoom, updateVehiclesNearByOnMap);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
