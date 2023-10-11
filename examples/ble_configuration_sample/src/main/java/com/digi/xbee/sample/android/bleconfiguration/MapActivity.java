@@ -25,7 +25,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private MapView mapView;
     private GoogleMap googleMap;
     private DatabaseGateway databaseGateway;
-    private GeoLocation cameraLocation;
+    private GeoLocation cameraLocation = new GeoLocation(0, 0);  // Initialize with a default location
 
     List<Marker> vehiclesNearbyMarkers = new ArrayList<>();
 

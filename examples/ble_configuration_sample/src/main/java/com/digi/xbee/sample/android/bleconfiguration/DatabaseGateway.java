@@ -201,8 +201,10 @@ public class DatabaseGateway {
         @Override
         public void onLocationChanged(Location location) {
             hashedMyLocation = GeoFireUtils.getGeoHashForLocation(new GeoLocation(location.getLatitude(), location.getLongitude()));
-            myLocationDocument.update("Location", new GeoLocation(location.getLatitude(), location.getLongitude()),
-                    "geoHash", hashedMyLocation);
+            if (location != null) {
+                myLocationDocument.update("Location", new GeoLocation(location.getLatitude(), location.getLongitude()),
+                        "geoHash", hashedMyLocation);
+            }
         }
 
         @Override
