@@ -1,10 +1,13 @@
 package com.digi.xbee.sample.android.bleconfiguration;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.maps.GoogleMap;
@@ -57,6 +60,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            googleMap.setMyLocationEnabled(true);
         databaseGateway = DatabaseGateway.getINSTANCE(getApplicationContext());
         googleMap.setOnCameraMoveListener(() -> {
             try {

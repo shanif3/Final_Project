@@ -8,6 +8,8 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.firebase.geofire.GeoFireUtils;
+import com.firebase.geofire.GeoLocation;
 import com.google.firebase.FirebaseApp;
 
 public class MainActivity extends AppCompatActivity {

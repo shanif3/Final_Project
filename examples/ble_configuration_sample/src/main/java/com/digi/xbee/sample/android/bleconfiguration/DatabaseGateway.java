@@ -62,8 +62,8 @@ public class DatabaseGateway {
 
     Map<String, DeviceInfo> linkedVehicles = new HashMap<>();
 
-    String hashedMyLocation;
-    GeoLocation myLocation;
+    String hashedMyLocation = GeoFireUtils.getGeoHashForLocation(new GeoLocation(0, 0));
+    GeoLocation myLocation = new GeoLocation(0, 0);
 
     Context context;
 
@@ -116,7 +116,7 @@ public class DatabaseGateway {
         final List<Task<QuerySnapshot>> tasks = new ArrayList<>();
         for (GeoQueryBounds b : bounds) {
             Query q = db.collection("vehicles")
-                    .orderBy("geoHash")
+                    .orderBy("hashedLocation")
                     .startAt(b.startHash)
                     .endAt(b.endHash);
 
@@ -133,7 +133,8 @@ public class DatabaseGateway {
 
                     for (Task<QuerySnapshot> task : tasks) {
                         QuerySnapshot snap = task.getResult();
-                        for (DocumentSnapshot doc : snap.getDocuments()) {
+                        List<DocumentSnapshot> documents = snap.getDocuments();
+                        for (DocumentSnapshot doc : documents) {
                             GeoLocation geoLocation = doc.get("Location", GeoLocation.class);
                             double distanceInM = GeoFireUtils.getDistanceBetween(geoLocation, center);
                             if (distanceInM <= radiusInM) {
