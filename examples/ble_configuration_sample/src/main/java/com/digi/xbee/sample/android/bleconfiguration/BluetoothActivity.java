@@ -387,9 +387,8 @@ public class BluetoothActivity extends AppCompatActivity {
                             bluetoothDevice.getAddress(),
                             bluetoothDevice.getName(),
                             getDeviceType(bluetoothDevice.getName()),
-                            null, // Set the location information here or leave it as null
-                            currentTimeFormatted
-                    );
+                            currentTimeFormatted);
+                    databaseGateway.addLinkedVehicle(bluetoothDevice.getAddress(),bluetoothDevice.getName(),getDeviceType(bluetoothDevice.getName()),currentTimeFormatted);
 
 //                    for (DeviceInfo deviceInfo : deviceInfoList) {
 //                        Log.d("DeviceInfo", "Name: " + deviceInfo.getName());

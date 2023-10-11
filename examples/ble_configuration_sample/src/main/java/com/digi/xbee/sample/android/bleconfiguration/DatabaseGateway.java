@@ -11,20 +11,26 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryBounds;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,36 +54,29 @@ public class DatabaseGateway {
     ListenerRegistration myLocationListener;
 
     DocumentReference myLocationDocument;
-    DocumentReference vehiclesNearbyDocument;
+    List<DocumentSnapshot> vehiclesNearby;
 
-    List<DocumentSnapshot> vehicles;
+    public Map<String, DeviceInfo> getLinkedVehicles() {
+        return linkedVehicles;
+    }
+
+    Map<String, DeviceInfo> linkedVehicles;
 
     String hashedMyLocation;
+    GeoLocation myLocation;
 
     Context context;
 
 
-
-    public void addDeviceInfoToDeviceCollection(String address, String name, DeviceInfo.VehicleType deviceType, GeoLocation location, String lastModified) {
-        // Create a map containing the device information
-        Map<String, Object> deviceInfo = new HashMap<>();
-        deviceInfo.put("address", address);
-        deviceInfo.put("name", name);
-        deviceInfo.put("deviceType", deviceType);
-        deviceInfo.put("location", new GeoLocation(0, 0));
-        deviceInfo.put("lastModified", lastModified);
-        deviceInfo.put("geoHash", GeoFireUtils.getGeoHashForLocation(new GeoLocation(0, 0)));
+    public void addDeviceInfoToDeviceCollection(String address, String name, DeviceInfo.VehicleType deviceType, String lastModified) {
+        // Create the device information
+        DeviceInfo deviceInfo1 = new DeviceInfo(address, name, deviceType, myLocation, hashedMyLocation, lastModified, generatedId);
 
 
         // Add the device information to Firestore
-        db.collection("vehicles").add(deviceInfo)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(context, "Device information added successfully", Toast.LENGTH_SHORT).show();
-
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error adding device information to Firestore: " + e.getMessage());
-                });
+        db.collection("vehicles").add(deviceInfo1)
+                .addOnSuccessListener(documentReference -> Toast.makeText(context, "Device information added successfully", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Log.e(TAG, "Error adding device information to Firestore: " + e.getMessage()));
 
     }
 
@@ -87,7 +86,7 @@ public class DatabaseGateway {
         return INSTANCE;
     }
 
-   private DatabaseGateway(Context context) {
+    private DatabaseGateway(Context context) {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
 //
@@ -143,8 +142,8 @@ public class DatabaseGateway {
 
                         }
                     }
-                    listConsumer.accept(vehicles);
-                    vehicles = matchingDocs;
+                    listConsumer.accept(vehiclesNearby);
+                    vehiclesNearby = matchingDocs;
                 });
 //
 //        myLocationListener = myLocationDocument.addSnapshotListener((documentSnapshot, error) -> {
@@ -196,14 +195,24 @@ public class DatabaseGateway {
         return distance;
     }
 
+    public void addLinkedVehicle(String address, String name, DeviceInfo.VehicleType deviceType, String currentTimeFormatted) {
+
+        this.linkedVehicles.put(address, new DeviceInfo(address, name, deviceType, myLocation, hashedMyLocation, currentTimeFormatted, generatedId));
+    }
+
     private class MyLocationListener implements LocationListener {
 
         @Override
         public void onLocationChanged(Location location) {
             hashedMyLocation = GeoFireUtils.getGeoHashForLocation(new GeoLocation(location.getLatitude(), location.getLongitude()));
-            if (location != null) {
-                myLocationDocument.update("Location", new GeoLocation(location.getLatitude(), location.getLongitude()),
-                        "geoHash", hashedMyLocation);
+            if (myLocationDocument != null) {
+                WriteBatch batch = db.batch();
+                for (DeviceInfo deviceInfo : linkedVehicles.values()) {
+                    DocumentReference vehicle = db.collection("vehicles").document(deviceInfo.getAddress());
+                    batch.set(vehicle, deviceInfo);
+                }
+                batch.commit().addOnCompleteListener(task -> {
+                });
             }
         }
 
