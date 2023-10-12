@@ -45,9 +45,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.digi.xbee.api.RemoteXBeeDevice;
+import com.digi.xbee.api.XBeeNetwork;
 import com.digi.xbee.api.android.XBeeBLEDevice;
 import com.digi.xbee.api.exceptions.BluetoothAuthenticationException;
 import com.digi.xbee.api.exceptions.XBeeException;
+import com.digi.xbee.api.listeners.IDiscoveryListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -289,47 +292,81 @@ public class BluetoothActivity extends AppCompatActivity {
                 getResources().getString(R.string.connecting_device_description), true);
 
         // The connection process blocks the UI interface, so it must be done in a different thread.
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Instantiate an XBee BLE device with the Bluetooth device and password.
-                xbeeDevice = new XBeeBLEDevice(BluetoothActivity.this, device, password);
-                try {
-                    // Open the connection with the device.
-                    xbeeDevice.open();
+        new Thread(() -> {
+            // Instantiate an XBee BLE device with the Bluetooth device and password.
+            xbeeDevice = new XBeeBLEDevice(BluetoothActivity.this, device, password);
+            try {
+                // Open the connection with the device.
+                xbeeDevice.open();
+                try{
+                    XBeeNetwork myXBeeNetwork = xbeeDevice.getNetwork();
+                    myXBeeNetwork.setDiscoveryTimeout(15000);
+                    myXBeeNetwork.addDiscoveryListener(new IDiscoveryListener(){
+                        @Override
+                            public void deviceDiscovered(RemoteXBeeDevice discoveredDevice) {
+                                Log.d("see", "devices:" + discoveredDevice.toString());
+                            }
 
-                    // If the open method did not throw an exception, the connection is open.
-                    BluetoothActivity.this.runOnUiThread(new Runnable() {
                         @Override
-                        public void run() {
-                            dialog.dismiss();
-                            // Start the Configuration activity.
-                            Intent intent = new Intent(BluetoothActivity.this, MapActivity.class);
-                            startActivity(intent);
+                        public void discoveryError(String error) {
+                                Log.d("see", "There was an error discovering devices: " + error);
+
+                        }
+
+                        @Override
+                        public void discoveryFinished(String error) {
+                            if (error== null)
+                                    Log.d("see","Discovery process finished successfully");
+                                else
+                                    Log.d("see","Discovery process finished due to the following error: " + error);
+
                         }
                     });
-                } catch (BluetoothAuthenticationException e) {
-                    // There was a problem in the Bluetooth authentication process, so ask for the password again.
-                    e.printStackTrace();
-                    BluetoothActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            dialog.dismiss();
-                            askForPassword(true);
-                        }
-                    });
-                } catch (final XBeeException e) {
-                    e.printStackTrace();
-                    BluetoothActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            dialog.dismiss();
-                            new AlertDialog.Builder(BluetoothActivity.this).setTitle(getResources().getString(R.string.error_connecting_title))
-                                    .setMessage(getResources().getString(R.string.error_connecting_description, e.getMessage()))
-                                    .setPositiveButton(android.R.string.ok, null).show();
-                        }
-                    });
+
+                        myXBeeNetwork.startDiscoveryProcess();
+                        Log.d("yes", "\n>> Discovering remote XBee devices...");
+
+
+
+
+
+
+
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
+
+                // If the open method did not throw an exception, the connection is open.
+                BluetoothActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                        // Start the Configuration activity.
+                        Intent intent = new Intent(BluetoothActivity.this, MapActivity.class);
+                        startActivity(intent);
+                    }
+                });
+            } catch (BluetoothAuthenticationException e) {
+                // There was a problem in the Bluetooth authentication process, so ask for the password again.
+                e.printStackTrace();
+                BluetoothActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                        askForPassword(true);
+                    }
+                });
+            } catch (final XBeeException e) {
+                e.printStackTrace();
+                BluetoothActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                        new AlertDialog.Builder(BluetoothActivity.this).setTitle(getResources().getString(R.string.error_connecting_title))
+                                .setMessage(getResources().getString(R.string.error_connecting_description, e.getMessage()))
+                                .setPositiveButton(android.R.string.ok, null).show();
+                    }
+                });
             }
         }).start();
     }

@@ -19,6 +19,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 
 import com.digi.xbee.api.AbstractXBeeDevice;
+import com.digi.xbee.api.XBeeNetwork;
 import com.digi.xbee.api.exceptions.TimeoutException;
 import com.digi.xbee.api.exceptions.XBeeException;
 import com.digi.xbee.api.listeners.IPacketReceiveListener;
@@ -84,7 +85,9 @@ public class XBeeBLEDevice extends AbstractXBeeDevice {
 
         this.bluetoothPassword = password;
     }
-
+    public XBeeNetwork getNetwork(){
+        return  super.getNetwork();
+    }
     @Override
     public boolean isRemote() {
         return false;
