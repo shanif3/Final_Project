@@ -18,6 +18,7 @@ import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQueryBounds;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
@@ -31,9 +32,16 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -100,15 +108,32 @@ public class DatabaseGateway {
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationListener = new MyLocationListener();
 
+        insertDummyVehicles();
+
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             return;
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BETWEEN_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
     }
 
+    private void insertDummyVehicles() {
+        long currentTimeMillis = System.currentTimeMillis();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        String currentTimeFormatted = dateFormat.format(new Date(currentTimeMillis));
+
+        DeviceInfo deviceInfo = new DeviceInfo("dummy_address", "dummy",
+                DeviceInfo.VehicleType.GHOST_CAR, new GeoLocation(32.27077213829874, 34.910166488294244),
+                GeoFireUtils.getGeoHashForLocation(new GeoLocation(32.27077213829874, 34.910166488294244)),
+                currentTimeFormatted, generatedId);
+        linkedVehicles.put("dummy_address", deviceInfo);
+        db.collection("vehicles").document(deviceInfo.getAddress()).set(deviceInfo)
+                .addOnSuccessListener(unused -> Log.i(TAG, "insertDummyVehicles: " + unused))
+                .addOnFailureListener(e -> Log.i(TAG, "insertDummyVehicles: " + e));
+    }
+
     public void setVehiclesNearbySnapshotListener(GeoLocation center, float zoom, Consumer<List<DocumentSnapshot>> listConsumer) {
 
-        final double radiusInM = 1000 * 1000/Math.pow(zoom+2, 2);
+        final double radiusInM = 1000 * 1000 / Math.pow(zoom + 2, 2);
         // Each item in 'bounds' represents a startAt/endAt pair. We have to issue
 // a separate query for each pair. There can be up to 9 pairs of bounds
 // depending on overlap, but in most cases there are 4.
@@ -136,7 +161,7 @@ public class DatabaseGateway {
                         List<DocumentSnapshot> documents = snap.getDocuments();
                         for (DocumentSnapshot doc : documents) {
                             if (!doc.contains("location")) continue;
-                            GeoLocation geoLocation = new GeoLocation(doc.getDouble("location.latitude"),doc.getDouble("location.longitude"));
+                            GeoLocation geoLocation = new GeoLocation(doc.getDouble("location.latitude"), doc.getDouble("location.longitude"));
                             double distanceInM = GeoFireUtils.getDistanceBetween(geoLocation, center);
                             if (distanceInM <= radiusInM) {
                                 matchingDocs.add(doc);
@@ -207,7 +232,8 @@ public class DatabaseGateway {
 
         @Override
         public void onLocationChanged(Location location) {
-            hashedMyLocation = GeoFireUtils.getGeoHashForLocation(new GeoLocation(location.getLatitude(), location.getLongitude()));
+            myLocation = new GeoLocation(location.getLatitude(), location.getLongitude());
+            hashedMyLocation = GeoFireUtils.getGeoHashForLocation(myLocation);
             WriteBatch batch = db.batch();
             for (DeviceInfo deviceInfo : linkedVehicles.values()) {
                 DocumentReference vehicle = db.collection("vehicles").document(deviceInfo.getAddress());
