@@ -1,6 +1,8 @@
 package com.digi.xbee.sample.android.bleconfiguration;
 
 
+import static java.lang.Thread.sleep;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -8,6 +10,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -54,6 +58,8 @@ public class DatabaseGateway {
     public final String generatedId = UUID.randomUUID().toString();
 
     private static DatabaseGateway INSTANCE;
+    private final HandlerThread handlerThread;
+    private final Handler backgroundImageHandler;
     private LocationManager locationManager;
 
     private FirebaseFirestore db;
@@ -94,6 +100,7 @@ public class DatabaseGateway {
         return INSTANCE;
     }
 
+
     private DatabaseGateway(Context context) {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
@@ -101,7 +108,10 @@ public class DatabaseGateway {
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationListener = new MyLocationListener();
 
-//        insertDummyVehicles();
+        handlerThread = new HandlerThread("ImageProcessingThread");
+        handlerThread.start();
+        backgroundImageHandler = new Handler(handlerThread.getLooper());
+//        backgroundImageHandler.post(() -> insertDummyVehicles());
 
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
@@ -110,18 +120,37 @@ public class DatabaseGateway {
     }
 
     private void insertDummyVehicles() {
-        long currentTimeMillis = System.currentTimeMillis();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        String currentTimeFormatted = dateFormat.format(new Date(currentTimeMillis));
+        int c = 0;
+        while (true) {
+            try {
+                long currentTimeMillis = System.currentTimeMillis();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                String currentTimeFormatted = dateFormat.format(new Date(currentTimeMillis));
 
-        DeviceInfo deviceInfo = new DeviceInfo("dummy_address5", "dummy",
-                DeviceInfo.VehicleType.GHOST_CAR, new GeoLocation(32.273528, 34.854909),
-                GeoFireUtils.getGeoHashForLocation(new GeoLocation(32.273528, 34.854909)),
-                currentTimeFormatted, generatedId);
-        linkedVehicles.put(deviceInfo.getAddress(), deviceInfo);
-        db.collection("vehicles").document(deviceInfo.getAddress()).set(deviceInfo)
-                .addOnSuccessListener(unused -> Log.i(TAG, "insertDummyVehicles: " + unused))
-                .addOnFailureListener(e -> Log.i(TAG, "insertDummyVehicles: " + e));
+                // 32.317524264458115, 34.85352046021031
+                // 32.32804864453331, 34.897060605982
+                // 32.2202006901432, 34.88485094683196
+                // 32.236932264089, 34.99088821965968
+                GeoLocation geoLocation = new GeoLocation(32.2202 + Math.random() * 0.1, 34.853 + Math.random() * 0.1);
+
+                DeviceInfo deviceInfo = new DeviceInfo("dummy_address" + c, "dummy" + c,
+                        DeviceInfo.VehicleType.GHOST_CAR, geoLocation,
+                        GeoFireUtils.getGeoHashForLocation(geoLocation),
+                        currentTimeFormatted, generatedId);
+                linkedVehicles.put(deviceInfo.getAddress(), deviceInfo);
+                db.collection("vehicles").document(deviceInfo.getAddress()).set(deviceInfo)
+                        .addOnSuccessListener(unused -> Log.i(TAG, "insertDummyVehicles: " + unused))
+                        .addOnFailureListener(e -> Log.i(TAG, "insertDummyVehicles: " + e));
+                c++;
+                sleep(1000);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public void stopSendingDummies() {
+        handlerThread.quit();
     }
 
     public void setVehiclesNearbySnapshotListener(GeoLocation center, float zoom, Consumer<List<DocumentSnapshot>> listConsumer) {
