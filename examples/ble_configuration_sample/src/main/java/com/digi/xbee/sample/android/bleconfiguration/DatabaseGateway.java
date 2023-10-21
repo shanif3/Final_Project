@@ -97,18 +97,11 @@ public class DatabaseGateway {
     private DatabaseGateway(Context context) {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
-//
-//        myLocationDocument = db.collection("vehicles").document(generatedId);
-//        Map<String, Object> tempMap = new HashMap<>();
-//        tempMap.put("Location", new GeoLocation(0, 0));
-//        tempMap.put("carType", "Truck");
-//        tempMap.put("geoHash", GeoFireUtils.getGeoHashForLocation(new GeoLocation(0, 0)));
-//        myLocationDocument.set(tempMap);
 
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationListener = new MyLocationListener();
 
-        insertDummyVehicles();
+//        insertDummyVehicles();
 
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
