@@ -121,11 +121,11 @@ public class DatabaseGateway {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         String currentTimeFormatted = dateFormat.format(new Date(currentTimeMillis));
 
-        DeviceInfo deviceInfo = new DeviceInfo("dummy_address", "dummy",
-                DeviceInfo.VehicleType.GHOST_CAR, new GeoLocation(32.27077213829874, 34.910166488294244),
-                GeoFireUtils.getGeoHashForLocation(new GeoLocation(32.27077213829874, 34.910166488294244)),
+        DeviceInfo deviceInfo = new DeviceInfo("dummy_address5", "dummy",
+                DeviceInfo.VehicleType.GHOST_CAR, new GeoLocation(32.273528, 34.854909),
+                GeoFireUtils.getGeoHashForLocation(new GeoLocation(32.273528, 34.854909)),
                 currentTimeFormatted, generatedId);
-        linkedVehicles.put("dummy_address", deviceInfo);
+        linkedVehicles.put(deviceInfo.getAddress(), deviceInfo);
         db.collection("vehicles").document(deviceInfo.getAddress()).set(deviceInfo)
                 .addOnSuccessListener(unused -> Log.i(TAG, "insertDummyVehicles: " + unused))
                 .addOnFailureListener(e -> Log.i(TAG, "insertDummyVehicles: " + e));
